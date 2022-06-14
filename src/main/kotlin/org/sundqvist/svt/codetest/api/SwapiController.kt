@@ -9,10 +9,8 @@ class SwapiController(private val swapiService: SwapiService) {
 
 
     @GetMapping("/starships", produces = ["application/json"])
-    fun getStarships(): List<Starship> {
-        return swapiService.getStarships()
-            .map { Starship(it.name, it.cost_in_credits.toLongOrNull()) }
-    }
+    fun getStarships() = swapiService.getStarships()
+        .map { Starship(it.name, it.cost_in_credits.toLongOrNull()) }
 
 }
 

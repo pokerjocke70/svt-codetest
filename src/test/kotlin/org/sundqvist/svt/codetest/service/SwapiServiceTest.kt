@@ -24,12 +24,17 @@ class SwapiServiceTest : FunSpec() {
 
             val swapiClient = mockk<SwapiClient>()
 
-            every { swapiClient.getSpaceShips() } returns (1..1000).map { Starship("Starship $it", if(it % 10 == 0) "unknown" else "${it * 10}") }.toMutableList().apply {shuffle()}
+            every { swapiClient.getSpaceShips() } returns (1..1000).map {
+                Starship(
+                    "Starship $it",
+                    if (it % 10 == 0) "unknown" else "${it * 10}"
+                )
+            }.toMutableList().apply { shuffle() }
 
             val swapiService = SwapiService(swapiClient)
             val starships = swapiService.getStarships()
             assertEquals(15, starships.size)
-            assertEquals(Starship( "Starship 999", "9990"), starships.first())
+            assertEquals(Starship("Starship 999", "9990"), starships.first())
         }
     }
 

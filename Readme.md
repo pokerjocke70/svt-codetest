@@ -41,3 +41,4 @@ curl -s localhost:8081/swapi/starships |jq .
 - Document api with OAS
 - Some logging
 - Exception handling
+- cache

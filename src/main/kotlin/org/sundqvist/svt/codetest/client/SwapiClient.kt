@@ -1,34 +1,32 @@
 package org.sundqvist.svt.codetest.client
 
+import kotlinx.collections.immutable.toImmutableList
+import mu.KotlinLogging
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.retry.annotation.Backoff
+import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
 import org.sundqvist.svt.codetest.domain.Starship
 
 @Component
-class SwapiClient(private val restTemplate: RestTemplate) {
+class SwapiClient(
+    private val restTemplate: RestTemplate,
+    @Value("\${swapi.uri}") private val swapiUri: String
+) {
 
-    fun getSpaceShips(): List<Starship> {
-        val starships = mutableListOf<Starship>()
-        var exhausted = false
-        var page = 1
-        do {
-            loadNext(page).let {
-                if (it.next == null) {
-                    exhausted = true
-                } else {
-                    page++
-                }
-                starships.addAll(it.results)
-            }
-        } while (!exhausted)
+    private val logger = KotlinLogging.logger {}
 
-        return starships.toList()
-    }
+    @Retryable(maxAttempts = 2, backoff = Backoff(value = 50L, multiplier = 2.0))
+    fun getSpaceShips(): List<Starship> =
+        generateSequence({ loadStarships(swapiUri) }, { if (it.next != null) loadStarships(it.next) else null })
+            .flatMap { it.results }
+            .apply {
+                logger.info { "Returning ${count()} starships" }
+            }.toImmutableList()
 
 
-    private fun loadNext(page: Int): StarshipResponse {
-        return restTemplate.getForObject("https://swapi.dev/api/starships/?page=$page", StarshipResponse::class.java)!!
-    }
+    private fun loadStarships(page: String) = restTemplate.getForObject(page, StarshipResponse::class.java)!!
 }
 
 private data class StarshipResponse(val next: String?, val results: List<Starship>)

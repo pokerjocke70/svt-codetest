@@ -1,10 +1,10 @@
 package org.sundqvist.svt.codetest.service
 
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.sundqvist.svt.codetest.client.SwapiClient
 import org.sundqvist.svt.codetest.domain.Starship
 
@@ -18,7 +18,8 @@ class SwapiServiceTest : FunSpec() {
 
             val swapiService = SwapiService(swapiClient)
             val starships = swapiService.getStarships()
-            assertEquals(0, starships.size)
+
+            starships shouldBe emptyList()
         }
 
         test("getStarships should return the 10 most expensive starships") {
@@ -34,12 +35,10 @@ class SwapiServiceTest : FunSpec() {
 
             val swapiService = SwapiService(swapiClient)
             val starships = swapiService.getStarships()
-            assertEquals(10, starships.size)
-            assertEquals(Starship("Starship 999", "9990"), starships.first())
+            starships.size shouldBe 10
+            starships.first() shouldBe Starship("Starship 999", "9990")
         }
     }
-
-    //
 }
 
 
